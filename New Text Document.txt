@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Map Popup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .popup {
+            position: absolute;
+            display: none;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .popup::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+    </style>
+</head>
+<body>
+
+<div class="image-container">
+    <img src="your-image.jpg" alt="Interactive Image" usemap="#image-map" width="800">
+    <div id="popup" class="popup"></div>
+</div>
+
+<map name="image-map">
+    <area shape="rect" coords="100,100,200,200" href="#" data-info="Details for Area 1">
+    <area shape="circle" coords="400,300,50" href="#" data-info="Details for Area 2">
+    <area shape="poly" coords="300,400,350,450,400,400,350,350" href="#" data-info="Details for Area 3">
+</map>
+
+<script>
+    const areas = document.querySelectorAll('area');
+    const popup = document.getElementById('popup');
+
+    areas.forEach(area => {
+        area.addEventListener('click', (e) => {
+            e.preventDefault();
+            const info = area.getAttribute('data-info');
+            const coords = area.coords.split(',');
+            const rect = e.target.closest('.image-container').getBoundingClientRect();
+            const x = parseInt(coords[0]) + rect.left;
+            const y = parseInt(coords[1]) + rect.top;
+
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+            popup.innerHTML = info;
+            popup.style.display = 'block';
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('area') && !e.target.closest('.popup')) {
+            popup.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

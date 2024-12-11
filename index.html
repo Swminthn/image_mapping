@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Image Map with Modal</title>
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .image-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .image-container img {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            max-height: 80%; /* Ensures modal fits smaller screens */
+            padding: 20px;
+            display: none;
+            z-index: 20;
+            overflow-y: auto; /* Enables scrolling for long content */
+            box-sizing: border-box;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .modal p {
+            margin: 10px 0;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .modal img {
+            width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+        }
+
+        .close-btn {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .close-btn:hover {
+            background-color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .modal {
+                width: 95%; /* Adjust modal width for smaller devices */
+                padding: 15px;
+            }
+
+            .modal h2 {
+                font-size: 1.2em; /* Adjust font size */
+            }
+
+            .modal p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="image-container">
+    <img src="map.png" alt="Interactive Map" usemap="#image-map">
+</div>
+
+<div class="modal-overlay" id="modal-overlay"></div>
+<div class="modal" id="modal">
+    <h2 id="modal-title"></h2>
+    <p id="modal-content"></p>
+    <img id="modal-image" src="" alt="State Image">
+    <button class="close-btn" id="close-modal">Close</button>
+</div>
+
+<map name="image-map">
+    <area shape="poly" coords="200,50,300,100,250,150,150,120" href="#" alt="Jammu & Kashmir" title="Jammu & Kashmir" data-info="Jammu & Kashmir - A beautiful northern state known for its breathtaking landscapes and scenic beauty." data-image="jammu_kashmir.jpg">
+    <area shape="poly" coords="1772,901,1886,1045,1812,1189,1676,1056" href="#" alt="Punjab" title="Punjab" data-info="Punjab - Famous for its agriculture and the heart of Indian culture." data-image="punjab.png">
+    <area shape="poly" coords="1935,787,1804,941,2134,945,1994,1191" href="#" alt="Himachal Pradesh" title="Himachal Pradesh" data-info="Himachal Pradesh - A hill state known for its hill stations and temples." data-image="hp.jpg">
+</map>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const areas = document.querySelectorAll('area');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    const modalImage = document.getElementById('modal-image');
+    const closeModal = document.getElementById('close-modal');
+    const img = document.querySelector('.image-container img');
+
+    // Adjust areas dynamically when the image size changes
+    function scaleAreas() {
+        const scaleX = img.clientWidth / img.naturalWidth;
+        const scaleY = img.clientHeight / img.naturalHeight;
+
+        areas.forEach(area => {
+            const originalCoords = area.dataset.originalCoords || area.coords;
+            area.dataset.originalCoords = originalCoords;
+            const coords = originalCoords.split(',').map(coord => Math.round(coord * scaleX));
+            area.coords = coords.join(',');
+        });
+    }
+
+    img.addEventListener('load', scaleAreas);
+    window.addEventListener('resize', scaleAreas);
+
+    areas.forEach(area => {
+        area.addEventListener('click', (e) => {
+            e.preventDefault();
+            const title = area.title;
+            const info = area.getAttribute('data-info');
+            const image = area.getAttribute('data-image');
+
+            modalTitle.textContent = title;
+            modalContent.textContent = info;
+            modalImage.src = image;
+
+            modalOverlay.style.display = 'block';
+            modal.style.display = 'block';
+        });
+    });
+
+    closeModal.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+        modal.style.display = 'none';
+    });
+
+    modalOverlay.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+        modal.style.display = 'none';
+    });
+});
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+    });
+}
+
+</script>
+
+<noscript>
+    This app requires JavaScript to run. Please enable JavaScript.
+</noscript>
+
+
+</body>
+</html>
